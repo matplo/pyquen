@@ -1,0 +1,20 @@
+    -------------------------------------------------------------
+      PYQUEN, event generator for simulation of rescattering, radiative 
+      and collisional energy loss of hard partons in expanding quark-gluon 
+      plasma created in ultrarelativistic heavy ion AA collisions  
+      (implemented as modification of standard pythia6.4xx jet event)
+      -------------------------------------------------------------
+
+      Igor Lokhtin, SINP MSU, Moscow, RU
+      e-mail: Igor.Lokhtin@cern.ch 
+
+      Main reference for PYQUEN: 
+      I.P. Lokhtin, A.M. Snigirev, Eur. Phys. J. C 45 (2006) 211-217
+ 
+      References for PYTHIA6.4: 
+      T.Sjostrand, S. Mrenna and P. Skands, JHEP05 (2006) 026.
+ 
+      Web-page: 
+      http://cern.ch/lokhtin/pyquen 
+      -------------------------------------------------------------      
+

@@ -1,0 +1,119 @@
+      -------------------------------------------------------------
+      PYQUEN, event generator for simulation of rescattering, radiative 
+      and collisional energy loss of hard partons in expanding quark-gluon 
+      plasma created in ultrarelativistic heavy ion AA collisions  
+      (implemented as modification of standard pythia6.4xx jet event)
+      -------------------------------------------------------------
+
+      Igor Lokhtin, SINP MSU, Moscow, RU
+      e-mail: Igor.Lokhtin@cern.ch 
+
+      Main reference for PYQUEN: 
+      I.P. Lokhtin, A.M. Snigirev, Eur. Phys. J. C 45 (2006) 211-217
+ 
+      References for PYTHIA6.4: 
+      T.Sjostrand, S. Mrenna and P. Skands, JHEP05 (2006) 026.
+ 
+      Web-page: 
+      http://cern.ch/lokhtin/pyquen 
+      -------------------------------------------------------------      
+
+      Description of routine
+       
+CALL pyquen(A,ifb,bfix,bmin,bmax)  - generates one event
+
+input parameters: 
+
+  A    - beam and target nucleus atomic number
+  ifb  - flag of type of centrality generation 
+         =0 impact parameter is fixed (bfix)  
+	 >0 or <0 impact parameter is generated with standard Glauber geometry
+	          between minimum (bmin) and maximum (bmax) values;  
+  bfix - fixed impact parameter in [fm], valid only if ifb=0
+         (allowed range is 0 < bfix < 3*RA, where RA is the nuclear radius)
+  bmin - minimum impact parameter in [fm], valid only if ifb=1
+  bmax - maximum impact parameter in [fm], valid only if ifb=1
+  
+Standard PYTHIA initialization should be done at the beginning of main user 
+routine:
+
+CALL pyinit('CMS','p','p',energy)
+
+with input parameter:
+
+   energy - c.m.s energy per nucleon pair in GeV 
+   
+      --------------------------------------------------------------
+
+Parameters in COMMON BLOCK PYQPAR can be varied by user: 
+
+COMMON /pyqpar/ T0,tau0,nf,ienglu,ianglu
+   T0 - maximum initial temperature of quark-gluon plasma for central Pb+Pb 
+   collisions at mid-rapidity (initial temperature for other centralities and 
+   atomic numbers will be calculated automatically);   
+   (allowed range is 0.2 GeV < T0 < 2 GeV, default value is T0=1 GeV);
+   tau0 - proper time of quark-gluon plasma formation 
+   (allowed range is 0.01 < tau0 < 10 fm/c, default value is tau0=0.1 fm/c);
+   nf - number of active quark flavours in quark-gluon plasma
+   (nf=0, 1, 2 or 3, default value is nf=0); 
+   ienglu - flag to fix type of medium-induced partonic energy loss
+   (ienglu=0 - radiative and collisional loss, 
+    ienglu=1 - radiative loss only, ienglu=2 - collisional loss only,
+    default value is ienglu=0);
+   ianglu - flag to fix type of angular distribution of emitted gluons  
+   (ianglu=0 - small-angular, ianglu=1 - wide-angular, ianglu=2 - collinear, 
+    default value is ianglu-0).  
+
+NOTE! If specified by user value of such parameter is out of allowed range, 
+      the default value is used in PYQUEN run. 
+
+NOTE! Default parameters of quark-gluon plasma (T0, tau0, nf) were selected as 
+      an estimation for LHC heavy ion beam energies. 
+
+  -------------------------------------------------------------- 
+
+Output event parameters in COMMON BLOCKS: 
+
+generated value of impact parameter, bgen, is stored in COMMON BLOCK PLFPAR:
+COMMON /plfpar/ bgen
+
+output particle information is stored in PYTHIA6.4xx COMMON BLOCK PYJETS
+COMMON /pyjets/ n,npad,k(4000,5),p(4000,5),v(4000,5)        
+  n        - number of lines in the current event 
+  npad     - dummy to ensure as even number of integers        
+  k(i,1-5) - particle codes    
+  p(i,1-5) - particle four-momentum and mass 
+  v(i,1-5) - particle vertex, production time and lifetime   
+
+Detailed description of common block pyjets and other pythia6.4xx elements can 
+be found in PYTHIA6.4 manual.  
+
+NOTE! Since pyquen uses pythia common blocks and other pythia elements, main 
+      user program should be compiled with pyquen1.5 and latest pythia 
+      (6.401 or later versions) object files.   
+      
+NOTE! Since pyquen deals with partonic pythia event, the fragmentation should 
+      be switched off before pyquen call using parameter mstp(111) from pythia 
+      common block pypars:     
+      ...
+      mstp(111)=0                       ! fragmentation off  
+c      mstj(41)=0                        ! vacuum showering off 
+      call pyevnt                       ! 'normal' single pythia event 
+      call pyquen(A,ifb,bfix,bmin,bmax) ! 'quenched' single pythia event 
+      call pyexec                       ! fragmentation done  
+      ...                            
+      in the case if Pythia final state radiation is switching off (if one set 
+      mstj(41)=0 in the main routine), the Pyquen option "vacuum showering 
+      after in-medium partonic energy loss" is foreseen.
+      -------------------------------------------------------------------------
+      
+      Physics validity of the model 
+      
+1. Hydro-type description of quark-gluon plasma evolution used by pyquen, is 
+expected to be applicable for central and semi-central heavy ion collisions. 
+The result obtained for very peripheral collisions (b~2*RA) can be not adequate. 
+2. Physics model for description of medium-induced gluon radiation is based on 
+Baier-Dokshitzer-Mueller-Schiff formalism and valid for relatively high
+transverse momenta of jet partons (>> 1 GeV/c). Thus setting reasonably high  
+values of minimum pt in initial hard parton sub-processes (parameter ckin(3) in 
+pythia common block pysubs) is preferable.

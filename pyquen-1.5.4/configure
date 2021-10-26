@@ -1,0 +1,271 @@
+#!/bin/sh
+#
+# Configuration script, to be run before compilation
+#
+export PREFIX=../PYQUEN
+export TUNE=PyInput
+export COMPMODE=Release
+export sourceFrom=lokhtin
+
+ver=$(echo `cat CMakeLists.txt` | cut -d# -f3,5)
+
+if [[ -z $* ]] ; then
+    echo -e "
+ ******************************************************************************
+ ******************************************************************************
+ **                                                                          **
+ **                                                                          **\r **            $ver
+ **                                                                          **
+ ******************************************************************************
+ ******************************************************************************
+
+ ==============================================================================
+ I   Description : Event generator for simulation of parton rescattering      I
+ I                 and energy loss in expanding quark-gluon plasma created    I
+ I                 in ultrarelativistic heavy ion AA collisons                I
+ I                 (implemented as modification of standard Pythia jet event) I
+ ==============================================================================
+ I   Reference: I.P. Lokhtin, A.M. Snigirev, Eur. Phys. J. C 46 (2006) 211    I
+ ==============================================================================
+
+ TO INSTALL PLEAS DO: ./configure --lib OR ./configure --help FOR MORE OPTIONS"
+    exit
+fi
+
+# check arguments
+for arg in $* ; do
+  if [ "x$arg" = "x--help" ] ; then
+    echo "Usage: ./configure [options] , where options are:"
+    echo "--help              : prints this help"
+    echo "--version           : version of this building"
+    echo "--prefix=path       : path to install, default is ../PYQUEN"
+    echo "--lib               : build library only"
+    echo "--build-test        : build PYQUEN binnary for tests (-DPyTest)"
+    echo "--build-pythia      : build PYTHIA from source in case of running issue (-DPythiaFromSource)"
+    echo "--buildtype=value   : possible types: None, Release, Debug, MinSizeRel, RelWithDebInfo, D=Release, see CMake manual"
+    echo "--Pythia6-DIR=path  : path to Pythia library (-DPYTHIA6_DIR)"
+    echo "--LHAPDF-DIR=path   : path to LHAPDF root dir (-DLHAPDF_ROOT_DIR)"
+    echo
+    echo "Note: to obtain complete library only, use ./configure --lib"
+    echo "To use defaults, please do ./runconfigure (library would be at ../PYQUEN/lib/ and binnary at ../PYQUEN/)"
+    echo
+    exit
+  elif [ "x$arg" = "x--lib" ] ; then
+    echo "Building library..."
+  elif [ "x$arg" = "x--source-note-centos" ] ; then
+    DoSourceNote=true
+    system=centos7
+  elif [ "x$arg" = "x--source-note-slc" ] ; then
+    DoSourceNote=true
+    system=slc6
+  elif [ "x$arg" = "x--version" ] ; then
+    echo -e "\033[34;1m $ver \033[0m"
+    exit
+  elif [ "x$arg" = "x--enable-debug" ] ; then
+    COMPMODE=Debug
+  elif [ "x$arg" = "x--build-pythia" ] ; then
+    BPythia=ON
+  elif [ "x$arg" = "x--build-test" ] ; then
+    DoExe=ON
+  elif [ x`echo x${arg} | grep "="` != x ] ; then
+    option=`echo ${arg} | awk -F = '{print $1}'`
+    value=`echo ${arg} | awk -F = '{print $2}'`
+    if [ "x${option}" = "x--prefix" ] ; then
+      PREFIX=${value}
+    elif [ "x${option}" = "x--Pythia6-DIR" ] ; then
+      PythiaDIR=${value}
+    elif [ "x${option}" = "x--LHAPDF-DIR" ] ; then
+      LhapdfDIR=${value}
+    elif [ "x${option}" = "x--TUNE" ] ; then      
+      TUNE=${value}
+    elif [ "x${option}" = "x--source" ] ; then     
+      sourceFrom=${value}
+    elif [ "x${option}" = "x--buildtype" ] ; then
+      if [ "${value}" = "None" ] ; then
+        COMPMODE=${value}
+      elif [ "${value}" = "Release" ] ; then
+        COMPMODE=${value}
+      elif [ "${value}" = "Debug" ] ; then
+        COMPMODE=${value}
+      elif [ "${value}" = "MinSizeRel" ] ; then
+        COMPMODE=${value}
+      elif [ "${value}" = "RelWithDebInfo" ] ; then
+        COMPMODE=${value}
+      else
+        echo "${value}: wrong value for buildtype. Ignored." >&2
+        echo
+      fi
+    else
+      echo "${arg}: wrong option. Ignored." >&2
+      echo
+      echo " >> Please note, that You have to use only parameters provided by this script (see ./configure --help) when using ./configure <<"
+      echo
+      exit
+    fi
+  else
+  echo " Please note, that You have to use only parameters provided by this script (see ./configure --help) when using ./configure"
+  echo " If You tried to use cmake option, looking like -D***, please use equivalent option from ./configure --help, which looks like --***"
+  exit
+  fi
+done
+
+echo "The package will be installed in PREFIX = "$PREFIX
+echo
+
+if [ $BPythia ] ; then
+wget http://cern.ch/${sourceFrom}/pyquen/PYTHIA6.tar.gz
+tar -xf PYTHIA6.tar.gz
+rm PYTHIA6.tar.gz
+fi
+
+rm -f ./CMakeCache.txt
+
+ARGLIST="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_BUILD_TYPE=${COMPMODE}"
+
+if [ "x${DoExe}" != "x" ] ; then
+  ARGLIST="${ARGLIST} -DPyTest=${DoExe}"
+if ! [[ -d "test" ]] ; then
+  wget http://cern.ch/wouf/GeneratorTests/pyquen/test.tar.gz
+  tar -xf test.tar.gz
+  rm test.tar.gz
+fi
+if ! [[ -f "test/tunes/${TUNE}" ]] ; then
+  wget http://cern.ch/wouf/GeneratorTunes/${TUNE} --directory-prefix=test/tunes/
+fi
+fi
+if [ "x${BPythia}" != "x" ] ; then
+  ARGLIST="${ARGLIST} -DPythiaFromSource=${BPythia}"
+fi
+if [ "x${PythiaDIR}" != "x" ] ; then
+  ARGLIST="${ARGLIST} -DPYTHIA6_DIR=${PythiaDIR}"
+fi
+if [ "x${LhapdfDIR}" != "x" ] ; then
+  ARGLIST="${ARGLIST} -DLHAPDF_ROOT_DIR=${LhapdfDIR}"
+fi
+if [ "x${TUNE}" != "x" ] ; then
+  ARGLIST="${ARGLIST} -DTUNE=${TUNE}"
+fi
+
+MYCMAKE3=`which  cmake3`
+if [ "x$MYCMAKE3" = "x" ] ; then
+
+
+MYCMAKE=`which  cmake`
+if [ "x$MYCMAKE" = "x" ] ; then
+  echo
+  echo "Error: cmake is not defined. Please define cmake"
+  echo
+  exit
+fi
+
+cmake -E remove_directory build && cmake -H. -Bbuild ${ARGLIST}
+CEC=`echo $?`
+ cmake --build build --target install --clean-first -- -j4 
+BEC=`echo $?`
+ cmake -E remove_directory build
+
+if [ "$CEC" = "0" ] && [ "$BEC" = "0" ] ; then
+echo -e "\033[32;1m"
+echo "*****************************************"
+echo "* The PYQUEN was installed to ${PREFIX} *"
+echo "*****************************************" 
+echo -e "\033[0m"
+echo
+if [[ $DoSourceNote = true ]] ; then
+echo -e "\033[31;1m PLEASE NOTE\033[0m: LCG_95 was sourced for PYTHIA and LHAPDF libraryes!"
+echo "To use compiled library please do:"
+if [ "`echo $SHELL`" = "/bin/tcsh" ] || [ "`echo $SHELL`" = "/bin/csh" ] ; then
+echo -e "\033[31;1m source /cvmfs/sft.cern.ch/lcg/views/LCG_95/x86_64-$system-gcc8-opt/setup.csh"
+else
+echo -e "\033[31;1m source /cvmfs/sft.cern.ch/lcg/views/LCG_95/x86_64-$system-gcc8-opt/setup.sh"
+fi
+echo -e "\033[0m"
+fi
+exit
+fi
+
+if [ "$CEC" != "0" ] ; then
+echo -e "\033[31;1m"
+echo "!!!!!!!!!!!!!!!!!!!!!!!"
+echo "! ERROR in the script !"
+echo "!!!!!!!!!!!!!!!!!!!!!!!" 
+echo -e "\033[0m"
+exit
+fi
+echo -e "\033[34;1m $ver \033[0m"
+if [ "$BEC" != "0" ] ; then
+echo -e "\033[31;1m"
+echo "!!!!!!!!!!!!!!!!!!!"
+echo "! Compiller ERROR !"
+echo "!!!!!!!!!!!!!!!!!!!" 
+echo -e "\033[0m"
+exit
+fi
+
+fi
+
+V3A=$(echo "`cmake3 --version`" | cut -d/ -f3)
+V3B=$(echo "$V3A" | cut -d' ' -f3)
+
+VA=$(echo "`cmake --version`" | cut -d/ -f3)
+VB=$(echo "$VA" | cut -d' ' -f3)
+
+function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
+if [ "$(version "$VB")" -gt "$(version "$V3B")" ]; then
+ echo "cmake $VB is greater than cmake3 $V3B !"
+ cmake -E remove_directory build && cmake -H. -Bbuild ${ARGLIST} 
+CEC=`echo $?`
+ cmake --build build --target install --clean-first -- -j4 
+BEC=`echo $?`
+ cmake -E remove_directory build
+
+ echo ">>>cmake v.$VB was used<<<"
+
+else
+ echo "cmake3 $V3B is greater than cmake $VB !"
+ 
+ cmake3 -E remove_directory build && cmake3 -H. -Bbuild ${ARGLIST}
+CEC=`echo $?`
+ cmake3 --build build --target install --clean-first -- -j4 
+BEC=`echo $?`
+ cmake3 -E remove_directory build
+ echo ">>>cmake3 v.$V3B was used<<<"
+
+fi
+
+if  [ "$CEC" = "0" ] && [ "$BEC" = "0" ]  ; then
+echo -e "\033[32;1m"
+echo "*****************************************"
+echo "* The PYQUEN was installed to ${PREFIX} *"
+echo "*****************************************" 
+echo -e "\033[0m"
+if [[ $DoSourceNote = true ]] ; then
+echo -e "\033[31;1m PLEASE NOTE\033[0m: LCG_95 was sourced for PYTHIA and LHAPDF libraryes!"
+echo "To use compiled library please do:"
+if [ "`echo $SHELL`" = "/bin/tcsh" ] || [ "`echo $SHELL`" = "/bin/csh" ] ; then
+echo -e "\033[31;1m source /cvmfs/sft.cern.ch/lcg/views/LCG_95/x86_64-$system-gcc8-opt/setup.csh"
+else
+echo -e "\033[31;1m source /cvmfs/sft.cern.ch/lcg/views/LCG_95/x86_64-$system-gcc8-opt/setup.sh"
+fi
+echo -e "\033[0m"
+fi
+exit
+fi
+
+if [ "$CEC" != "0" ] ; then
+echo -e "\033[31;1m"
+echo "!!!!!!!!!!!!!!!!!!!!!!!"
+echo "! ERROR in the script !"
+echo "!!!!!!!!!!!!!!!!!!!!!!!" 
+echo -e "\033[0m"
+exit
+fi
+
+if [ "$BEC" != "0" ] ; then
+echo -e "\033[31;1m"
+echo "!!!!!!!!!!!!!!!!!!!"
+echo "! Compiller ERROR !"
+echo "!!!!!!!!!!!!!!!!!!!" 
+echo -e "\033[0m"
+exit
+fi

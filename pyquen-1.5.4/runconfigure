@@ -1,0 +1,26 @@
+#!/bin/sh
+
+typeset -a LAV=("lxplus")
+HOST=$( echo "`hostname`"| sed 'y/1234567890/          /')
+
+ for ITEM in "${LAV[@]}"
+ do
+  if [  $(echo $HOST | cut -d' ' -f1)  == ${ITEM} ] ; then
+  #it's lxplus
+   DEST=$( echo "`lsb_release -i`"| cut -d':' -f2 )
+   if [  $(echo $DEST | cut -d' ' -f1)  == "CentOS" ] ; then
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_95/x86_64-centos7-gcc8-opt/setup.sh
+    ./configure --build-test --source-note-centos
+   else
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_95/x86_64-slc6-gcc8-opt/setup.sh
+    ./configure --build-test --source-note-slc
+   fi
+
+  else
+   if [[ -d "PYTHIA6" ]]; then
+    ./configure --build-test
+   else
+    ./configure --build-test --build-pythia
+   fi
+  fi
+ done

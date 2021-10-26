@@ -1,0 +1,142 @@
+                  ****************************
+                  *                          *
+                  *       Update notes       *
+                  *                          *
+                  *    PYQUEN version 1.5    *
+                  *                          *
+                  ****************************
+ 
+                  (Last updated 19 December 2007 / 24 November 2019)
+ 
+PYQUEN version 1.5 is a direct continuation of previous versions.   
+It should be used with the latest PYTHIA (PYTHIA6.401 and later versions). 
+
+-----------------------------------------------------------------------------   
+
+PYQUEN1.5.4: 24 Nov 2019
+
+1. Several technical adjustments for Fortran 2018 standard have been done. 
+
+PYQUEN1.5.3: 23 Mar 2019
+
+1. The two new parameters (minimum and maximum values of impact parameter 
+   bmin and bmax) have been introduced to the subroutine PYQUEN.
+
+2. Bug fix in subroutine PYQUEN: in some rare cases status codes of 
+   initial hard partons were not updated properly.
+
+PYQUEN1.5.2: 13 Mar 2019
+
+1. Several technical improvements have been done over the code to achieve 
+   better compatibility with the modern software build systems. 
+
+2. The subroutine PYQVER to print out PYQUEN versioning is introduced.
+
+PYQUEN1.5.1: 6 May 2010
+
+1. Bug fix in subroutine PLEVNT: when the value of current medium temperature 
+   during parton rescatterings becomes close to the critical temperature, 
+   additional restriction on such values may need. The mistake did not have 
+   dramatic consequences, since it could appear only in the regime where 
+   rescatterings are almost halted and energy loss is about zero. However in 
+   some very rare cases this bug led to infinite loop in subroutine PLJETR.
+
+PYQUEN1.5 : 19 December 2007 
+
+1. The treatment of hadronization of in-medium emitted gluons in frames of 
+   PYTHIA string fragmentation scheme is improved by additional re-ordering 
+   of colour connections of such gluons along the string. The appearance of 
+   small rapidity asymmetry of hadroproduction coming from PYQUEN-rearranged 
+   strings is avoided by such a way.  
+
+2. The previous sharp rapidity dependence of initial energy density in 
+   nuclear overlapping zone is replaced by the smooth (Gaussian-like) 
+   distribution. The input parameter T0 has now meaning of the effective 
+   initial temperature in central Pb-Pb collisions at mid-rapidity (y=0).
+
+
+PYQUEN1.4 : 27 October 2007 
+
+1. Wood-Saxon nucleon distribution is implemented in PYQUEN nuclear geometry
+   instead of hard sphere approximation (new function PRHOAA). Tabulation of 
+   impact parameter dependence of nuclear thickness function is performed in 
+   PYQUEN subroutine (arrays PBAB and PTAB). The spatial jet production vertex 
+   is calculated using the tabulated nuclear thickness function. If ifb=1, the 
+   tabulation of impact parameter dependence of nuclear overlap function is 
+   also performed in PYQUEN subroutine (arrays PBAB and PTAAB) to calculate 
+   distribution of jets over impact parameter of AA collisions. Maximum 
+   allowed value of impact parameter is three times of the nuclear radius. 
+
+2. The radial profile of energy density (temperature) is introduced in the
+   parton rescattering model. The transverse energy density in each point 
+   inside the nuclear overlapping zone is proportional to the impact-parameter 
+   dependent product of two nuclear thickness functions in this point. Thus the 
+   input parameter T0 has now meaning of the effective (i.e. averaged over the 
+   nuclear overlapping zone) initial temperature in central Pb-Pb collisions. 
+  
+
+PYQUEN1.3 : 3 October 2007 
+
+1. Bug fix in subroutine PLINIT: it was non-correct calculation of 
+   the medium lifetime at very high initial temperatures (T0~2 GeV). 
+
+2. Rotations of full event system in subroutines PLEVNT and PLJETR for every 
+   parton rescattering are canceled, only rotations for current rescattered
+   parton being hold. 
+   
+3. New internal parameter in common block PARIMP was introduced, 'noquen'. 
+   It provides the possibility to generate the spatial jet production vertex 
+   in PYTHIA without subsequent medium-induced rescattering. 
+       
+
+PYQUEN1.2 : 18 June 2007 
+
+1. PYQUEN1.2 can be used for different beam energies 
+   (input parameter 'energy' specifies the c.m.s. energy per nucleon pair).  
+
+2. Initial parameters of quark-gluon plasma and some energy loss settings can 
+   be varied now by user using new common block PYQPAR:
+   
+   COMMON /pyqpar/ T0,tau0,nf,ienglu,ianglu
+   T0 - initial QGP temperature for central Pb+Pb collisions
+   (allowed range is 0.2 GeV < T0 < 2 GeV, default value is T0=1 GeV);
+   tau0 - proper time of QGP formation 
+   (allowed range is 0.01 < tau0 < 10 fm/c, default value is tau0=0.1 fm/c);
+   nf - number of active quark flavours in QGP
+   (nf=0, 1, 2 or 3, default value is nf=0); 
+   ienglu - flag to fix type of medium-induced partonic energy loss
+   (ienglu=0 - radiative and collisional loss, 
+    ienglu=1 - radiative loss only, ienglu=2 - collisional loss only,
+    default value is ienglu=0);
+   ianglu - flag to fix type of angular distribution of emitted gluons  
+   (ianglu=0 - small-angular, ianglu=1 - wide-angular, ianglu=2 - collinear, 
+    default value is ianglu-0).  
+
+3. Bug fix in PLEVNT: at very forward rapidities some angular asymmetry of 
+   partonic energy loss was possible.
+
+
+PYQUEN1.1 : 26 April 2006
+
+1. New tolerance parameter paru(14) is used to adjust fragmentation of strings 
+   containing in-medium emitted gluons in PYTHIA_6401 routine PYSTRF. 
+   
+2. Minimum transverse momentum, 200 MeV, is requested for in-medium emitted 
+   gluon to be included in event list and strings. 
+ 
+3. Cut off on maximum absolute pseudorapidity of hard parton to be rescattered
+   in a medium is reduced to 3.5 (instead of 5. in previous version). 
+   
+4. Showering partons produced by the initial state radiation in PYTHIA are 
+   not allowed to be rescattered in a medium.
+
+5. Treatment of the option "vacuum showering after in-medium partonic energy 
+   loss" is improved. 
+
+6. Bug fix in PYQUEN subroutine PLJETR: when hard parton loses almost its 
+   energy, restriction on values of collisional and radiative loss may need.  
+   
+7. Setting parameter mstp(111)=0 in main user routine is recommended to 
+   switch off hadronization before calling pyquen instead of mstj(1)=0. 
+
+----------------------------------------------------------------------------- 

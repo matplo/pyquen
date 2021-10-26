@@ -1,0 +1,31 @@
+* set initial beam parameters 
+10000 #ntot 
+5500. #energy 
+207. #A
+1 #ifb flag for fixed impact parameter
+0. #bfix fixed impact parameter in [fm]
+0. #bmin min imp par [fm]
+30. #bmax max imp par [fm]
+# set of input PYQUEN parameters: 
+0 #ienglu=0 - radiative and collisional loss, ienglu=1 - only radiative loss, ienglu=2 - only collisional loss;  
+0 #ianglu=0 - small-angular radiation, ianglu=1 - wide angular radiation, inanglu=2 - collinear radiation 
+1 #T0 initial QGP temp
+0.1 #proper time of QGP formation
+0 #number of active quark flavors in QGP
+# set of input PYTHIA parameters 
+1 #msel                        ! QCD-dijet production 
+1. #paru(14) 1.d0                 ! tolerance parameter to adjust fragmentation 
+1  #mstu(21) 1                    ! avoid stopping run 
+100. #ckin(3) 50.d0                 ! minimum pt in initial hard sub-process 
+1 #mstp(52) 1                    ! LAPDF - 2 
+7 #mstp(51) 7                    ! CTEQ5M pdf 
+0 #mstp(81) 0                    ! pp multiple scattering off 
+0 #mstp(111) 0                   ! hadronization off 
+# set original test values for mean pt and event multiplicity 
+0.77 #pta0 0.77
+207. #dna0 207.
+# set initial test values and its rms 
+0. #ptam 0.
+0. #ptrms 0.
+0. #dnam 0.  
+0. #dnrms 0.
