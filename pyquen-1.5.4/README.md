@@ -1,4 +1,15 @@
-	
+# building
+
+'''
+./build.sh [--clean] [--debug] [--prefix=<installation>]
+'''
+
+- --debug is for debug build
+- --clean some cleanup
+- default installation is <where_cloned>/pyquen-1.5.4/pyquen
+
+--- ORIGNIAL README BELOW ---
+
 	---------------------------------------------------------------------------
 	To install PYQUEN the FORTRAN compiler and cmake version >= 3.5 is required
 	---------------------------------------------------------------------------
