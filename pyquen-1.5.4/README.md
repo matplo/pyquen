@@ -1,8 +1,7 @@
 # building
 
-'''
-./build.sh [--clean] [--debug] [--prefix=<installation>]
-'''
+
+`./build.sh [--clean] [--debug] [--prefix=<installation>]`
 
 - --debug is for debug build
 - --clean some cleanup
